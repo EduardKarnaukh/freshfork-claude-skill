@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 — 2026-04-16
+
+Marketplace repo moved from GitLab to GitHub:
+`https://github.com/EduardKarnaukh/freshfork-claude-skill.git`
+
+Existing users need to re-add the marketplace with the new URL. Docs and
+SKILL.md updated.
+
 ## 0.3.0 — 2026-04-16
 
 Non-technical users shouldn't have to open a terminal. Claude now drives `login.sh` itself.
@@ -32,8 +40,8 @@ Backend changes (shipped previously, documented here):
 - Configured via `GUS_API_KEY` env var — apply for a key at https://api.stat.gov.pl/Home/RegonApi. Without it the endpoint responds 503.
 
 Distribution:
-- Plugin marketplace moved to a dedicated public GitLab repo: https://gitlab.com/freshforkpublic/claude-skills
-- Users install via `/plugin marketplace add https://gitlab.com/freshforkpublic/claude-skills.git` then `/plugin install freshfork-crm@freshfork`.
+- Plugin marketplace moved to a dedicated public GitHub repo: https://github.com/EduardKarnaukh/freshfork-claude-skill
+- Users install via `/plugin marketplace add https://github.com/EduardKarnaukh/freshfork-claude-skill.git` then `/plugin install freshfork-crm@freshfork`.
 
 ## 0.1.0 — 2026-04-16
 

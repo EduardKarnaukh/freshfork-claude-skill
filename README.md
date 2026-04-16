@@ -6,7 +6,7 @@ This is the **source of truth** for Claude plugins that Freshfork ships. The rep
 
 **Claude Code CLI:**
 ```
-/plugin marketplace add https://gitlab.com/freshforkpublic/claude-skills.git
+/plugin marketplace add https://github.com/EduardKarnaukh/freshfork-claude-skill.git
 /plugin install freshfork-crm@freshfork
 ```
 

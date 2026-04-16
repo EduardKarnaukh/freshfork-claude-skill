@@ -109,7 +109,7 @@ If API calls return `401` / "Invalid or expired API token" — the PAT was revok
 
 This skill is shipped as a Claude plugin. Plugins auto-check for updates from the Freshfork marketplace at every session start.
 
-**Marketplace URL**: `https://gitlab.com/freshforkpublic/claude-skills.git`
+**Marketplace URL**: `https://github.com/EduardKarnaukh/freshfork-claude-skill.git`
 
 To update manually:
 - Claude Code CLI: `/plugin marketplace update freshfork`
