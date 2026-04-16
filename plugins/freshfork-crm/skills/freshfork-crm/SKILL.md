@@ -83,23 +83,27 @@ Then wait for confirmation. Exception: when the user has explicitly said "go ahe
 
 ## Setup (first run)
 
-If `~/.freshfork/config` doesn't exist, **tell the user to run the login script** — they do not need to know anything about tokens:
+If `~/.freshfork/config` doesn't exist, handle it yourself — do not tell the user to open a terminal and run commands. Users aren't developers.
 
-```bash
-bash "$SKILL_DIR/scripts/login.sh"
-# or, if the URL is already known:
-bash "$SKILL_DIR/scripts/login.sh" https://crm.similar.group
-```
+### Preferred flow (run it yourself)
 
-The script will:
-1. Ask for the CRM URL once and remember it
-2. Open `/settings/connect-cli?code=...` in the browser — the user is already logged into the web app
-3. User clicks "Approve" → a Personal Access Token (PAT) is created, valid for 90 days
-4. The script receives the token and writes `~/.freshfork/config` (chmod 600)
+1. Tell the user briefly: "I need to connect to Freshfork on your behalf. I'll open an approval page in your browser — please click **Approve** when it loads."
+2. Run the login script. Pass the default URL so no interactive prompt blocks:
+   ```bash
+   bash "$SKILL_DIR/scripts/login.sh" https://crm.similar.group
+   ```
+3. The script prints a line like `Approve URL: https://crm.similar.group/settings/connect-cli?code=ABCD-EFGH`. **Copy that URL verbatim and put it in your chat reply as a clickable link**, so the user sees it even if auto-open didn't work in their environment.
+4. The script opens the URL in the user's default browser (macOS `open` / Linux `xdg-open`). The user clicks Approve on the page.
+5. The script polls `/auth/cli/status` internally and, once approved, writes `~/.freshfork/config` (chmod 600). The PAT is valid for 90 days.
+6. Once the script exits with success, continue with whatever the user originally asked.
 
-If anything goes sideways (401, "token expired/consumed") — tell the user to rerun `login.sh`.
+### If `login.sh` fails or times out
 
-**Important for Claude**: do not run `login.sh` automatically — it opens a browser and waits for a human. Give the user the command and ask them to run it in a terminal.
+Fallback (rare — only when the sandbox has no `open`/`xdg-open` AND the user can't click the URL): show them the Approve URL from step 3 and say "open it, click Approve, then tell me when you're done". After they confirm, re-run `login.sh` (it will read the now-existing approved request from the same `code`) OR poll `/auth/cli/status` directly.
+
+### If auth is broken later
+
+If API calls return `401` / "Invalid or expired API token" — the PAT was revoked or expired. Tell the user "I need to reconnect" and run `login.sh` again (it will replace `~/.freshfork/config`).
 
 ## Updating the skill
 

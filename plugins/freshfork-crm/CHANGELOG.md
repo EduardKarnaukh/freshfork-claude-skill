@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 — 2026-04-16
+
+Non-technical users shouldn't have to open a terminal. Claude now drives `login.sh` itself.
+
+Skill changes:
+- `SKILL.md` setup section rewritten: Claude should *run* `login.sh` when the config is missing, not tell the user to copy-paste a shell command. It also captures the Approve URL from the script's stdout and posts it back to chat as a clickable link (fallback in environments where auto-`open` doesn't reach the user's browser).
+- Same section documents the fallback path if `login.sh` can't open a browser (rare) and the re-auth path when PATs expire.
+
+Related UI polish (separate change in `apps/web`):
+- `/settings/connect-cli` page is now copy-oriented for end users rather than developers — bigger CTA, drops IP/user-agent/request-code rows, reworded title and success message.
+
 ## 0.2.0 — 2026-04-16
 
 **Company lookup moved server-side.** The skill no longer calls the MinFin Whitelist API directly; instead it uses the CRM's new `POST /integrations/gus/lookup` endpoint, which proxies the Polish GUS BIR1 registry and returns a pre-parsed record (companyName, nip, regon, krs, street, postalCode, city, email, phone).
