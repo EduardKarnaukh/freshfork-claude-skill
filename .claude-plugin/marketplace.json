@@ -11,7 +11,7 @@
     {
       "name": "freshfork-crm",
       "source": "./plugins/freshfork-crm",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Freshfork CRM — API reference and business workflows for the Freshfork B2B CRM (NIP/REGON, orders, warehouse, integrations).",
       "keywords": ["crm", "freshfork", "poland", "nip", "regon", "b2b"]
     }

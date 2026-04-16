@@ -49,7 +49,8 @@ All examples below use `$SKILL_DIR` as shorthand for that path. If for some reas
 ### scripts/ — shell wrappers
 - `scripts/api.sh` — curl + Bearer + `/api/v1` prefix
 - `scripts/login.sh` — device-code auth flow (opens browser, saves PAT to config)
-- `scripts/pl-company-lookup.sh` — look up a Polish company by NIP via the Ministry of Finance Whitelist API
+
+For company lookup by NIP/REGON/KRS use the CRM endpoint `POST /integrations/gus/lookup` — it proxies the Polish GUS BIR1 registry and normalizes the response. No external API calls from the skill side.
 
 ## General rules
 

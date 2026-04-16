@@ -15,6 +15,41 @@ Clients module (B2B counterparties). A client is a company with a NIP/REGON, one
 
 Full schemas are in Swagger, tag `Clients`.
 
+## Company lookup (GUS)
+
+The CRM ships a wrapper around the Polish GUS BIR1 registry — use it before creating a client so `companyName`, `nip`, `regon`, `krs`, and the address are all pre-filled from authoritative data.
+
+**Endpoint:** `POST /integrations/gus/lookup`
+
+**Body** (pass exactly one of):
+- `{"nip": "<10 digits>"}`
+- `{"regon": "<9 or 14 digits>"}`
+- `{"krs": "<10 digits>"}`
+
+**Response** (200 `GusCompanyDto`):
+```json
+{
+  "companyName": "ALLEGRO.PL SP. Z O.O.",
+  "nip": "5252674798",
+  "regon": "365331553",
+  "krs": "0000635012",
+  "street": "Pl. Andersa 7",
+  "postalCode": "61-894",
+  "city": "Poznań",
+  "country": "PL",
+  "email": "kontakt@allegro.pl",
+  "phone": "+48123456789"
+}
+```
+
+**Errors:**
+- `400` — none of `nip/regon/krs` provided (`{"message":"Provide at least one of: nip, regon, krs"}`)
+- `404` — no company with that identifier (already deregistered or never existed)
+- `503 "GUS integration is not configured"` — admin needs to set `GUS_API_KEY` in the API `.env`; nothing we can do from the skill side.
+- `503 "GUS rate limit exceeded, retry later"` — brief burst limit; retry after a few seconds.
+
+**Permission:** `clients.create` (same as creating clients — if the user can't create clients, they can't use the lookup).
+
 ## Key fields
 
 ### CreateClientDto (POST)
