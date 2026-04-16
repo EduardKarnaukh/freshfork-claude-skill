@@ -1,0 +1,20 @@
+{
+  "name": "freshfork",
+  "owner": {
+    "name": "Freshfork",
+    "email": "admin@similar.group"
+  },
+  "metadata": {
+    "description": "Freshfork — Claude plugins for the Freshfork CRM (Polish B2B).",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "freshfork-crm",
+      "source": "freshfork-crm",
+      "version": "0.1.0",
+      "description": "Freshfork CRM — API reference and business workflows for the Freshfork B2B CRM (NIP/REGON, orders, warehouse, integrations).",
+      "keywords": ["crm", "freshfork", "poland", "nip", "regon", "b2b"]
+    }
+  ]
+}

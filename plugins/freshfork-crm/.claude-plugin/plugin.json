@@ -1,0 +1,17 @@
+{
+  "name": "freshfork-crm",
+  "version": "0.1.0",
+  "description": "Freshfork CRM — Polish B2B CRM. Adds an API reference and business workflows (add client by NIP, create order, manage stock, ...) so Claude can drive the CRM over its REST API.",
+  "author": {
+    "name": "Freshfork"
+  },
+  "homepage": "https://crm.similar.group",
+  "keywords": [
+    "crm",
+    "freshfork",
+    "poland",
+    "nip",
+    "regon",
+    "b2b"
+  ]
+}
