@@ -1,7 +1,7 @@
 {
   "name": "freshfork-crm",
-  "version": "0.3.1",
-  "description": "Freshfork CRM — Polish B2B CRM. Adds an API reference and business workflows (add client by NIP, create order, manage stock, ...) so Claude can drive the CRM over its REST API.",
+  "version": "0.3.2",
+  "description": "Freshfork CRM — Polish B2B CRM. Adds an API reference, business workflows (add client by NIP, add/edit a product, create an order, manage stock, post an invoice PDF as an expense or a purchase invoice with a PZ receipt document, ...), and end-user UI walkthroughs so Claude can either drive the CRM over its REST API or explain to a non-technical user where to click in the admin.",
   "author": {
     "name": "Freshfork"
   },

@@ -1,6 +1,6 @@
 ---
 name: freshfork-crm
-description: Freshfork CRM — a Polish B2B CRM. Use this skill whenever the user asks to do anything in Freshfork — add/find a client, create an order, check stock, look at sales, manage tasks, purchases, or integrations (Fakturownia, Allegro, Telegram). Polish B2B context — NIP/REGON, Polish companies, PLN.
+description: Freshfork CRM — a Polish B2B CRM. Use this skill whenever the user asks to do anything in Freshfork — add/find a client, add or edit a product, create an order, check stock, look at sales, manage tasks, purchases, expenses, or integrations (Fakturownia, Allegro, Telegram). Also covers end-user "how do I…" questions about the UI (where to click, what to upload) via `guides/` — answer from there for non-technical users instead of the API reference. Includes a unified flow for posting an invoice from a PDF/photo that classifies it as either an operational expense (phone, internet, rent, services) or a purchase invoice for goods that hit stock (auto-creates a PZ receipt document). Products can be created and updated but never deleted — use `isActive: false` to hide. Polish B2B context — NIP/REGON, Polish companies, PLN.
 ---
 
 # Freshfork CRM skill
@@ -31,23 +31,32 @@ All examples below use `$SKILL_DIR` as shorthand for that path. If for some reas
 
 ## Map
 
+### guides/ — end-user "how do I…" UI walkthroughs
+When the user is asking about the *UI* ("where do I click", "how do I upload the invoice", "how do I mark it paid") — they are a non-technical CRM user, not a developer. Answer from `guides/`, **not** from `reference/`. Translate steps into the user's language; keep button labels verbatim if helpful.
+
+- [`guides/expenses.md`](guides/expenses.md) — full UI walkthrough for the Expenses module: where it is, OCR upload flow, manual entry, line items, marking paid, bank accounts, filters, FAQ
+
 ### reference/ — per-module references
 - [`reference/clients.md`](reference/clients.md) — clients, contacts, addresses, groups, search by NIP
 - `reference/orders.md` — *(TODO)* orders, statuses DRAFT→CONFIRMED→…→INVOICED, comments
-- `reference/products.md` — *(TODO)* products, categories, units of measure
+- [`reference/products.md`](reference/products.md) — products, categories (tree), units of measure. **No-delete rule**: use `PUT {isActive:false}` to hide, never `DELETE`
 - `reference/warehouse.md` — *(TODO)* warehouses, receipt/issue documents, stock movements, production
-- `reference/purchases.md` — *(TODO)* suppliers, purchase invoices, OCR
+- [`reference/purchases.md`](reference/purchases.md) — suppliers, purchase invoices, PZ (warehouse receipt), auto-create PZ flow, product matching
 - `reference/sales.md` — *(TODO)* leads, deals, activities, pipeline stages
-- `reference/finance.md` — *(TODO)* bank accounts, expenses
+- [`reference/finance.md`](reference/finance.md) — expenses, line items, categories, bank accounts, upload + OCR
 - `reference/reports.md` — *(TODO)* sales report and filters
 - `reference/tasks.md` — *(TODO)* tasks, statuses, kanban
 - `reference/integrations.md` — *(TODO)* Fakturownia (invoicing), Allegro, Telegram, OpenAI OCR
 
 ### workflows/ — business scenarios
 - [`workflows/add-client-by-nip.md`](workflows/add-client-by-nip.md) — create a client from a Polish NIP using the Ministry of Finance Whitelist API
+- [`workflows/create-from-invoice-pdf.md`](workflows/create-from-invoice-pdf.md) — user drops a PDF/photo of an invoice → *you* parse it (Read tool) → **classify as expense vs. purchase invoice** (ask if unclear) → match supplier → (expense) pick category; (purchase) match products to catalog, optionally auto-create PZ → attach file → POST to `/expenses` or `/purchase-invoices`
+- [`workflows/add-product.md`](workflows/add-product.md) — collect name + category (from `/categories/tree`) + unit (from `/units`) + optional price/VAT/min-stock → preview → POST `/products`. SKU auto-generated if not given. Checks for duplicates first
+- [`workflows/update-product.md`](workflows/update-product.md) — find by name/SKU → partial `PUT` with only the changing fields. Hide via `isActive: false`; **never `DELETE`** (breaks historical orders/PZs/stock)
 
 ### scripts/ — shell wrappers
-- `scripts/api.sh` — curl + Bearer + `/api/v1` prefix
+- `scripts/api.sh` — curl + Bearer + `/api/v1` prefix (JSON endpoints)
+- `scripts/upload-receipt.sh` — multipart POST to `/expenses/receipt-upload` (attach a PDF/image to an expense *or* purchase invoice — no OCR; the backend stores the file and returns a URL)
 - `scripts/login.sh` — device-code auth flow (opens browser, saves PAT to config)
 
 For company lookup by NIP/REGON/KRS use the CRM endpoint `POST /integrations/gus/lookup` — it proxies the Polish GUS BIR1 registry and normalizes the response. No external API calls from the skill side.

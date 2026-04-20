@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.3.2 — 2026-04-20
+
+Big consolidated release. Everything drafted through 0.4 / 0.5 / 0.6 / 0.7 is now shipped in one bundle — the in-between version numbers were never published.
+
+### Invoice-from-PDF flow (expense + purchase invoice with PZ)
+
+Claude reads a PDF or photo of an invoice from chat and posts the right record — no server-side OCR. The `/expenses/upload` and `/purchase-invoices/upload` endpoints remain for the web UI only.
+
+- `workflows/create-from-invoice-pdf.md` — **unified flow** that classifies the document first (services → `/expenses`, goods-for-stock → `/purchase-invoices` with optional PZ), asks only when genuinely ambiguous (mixed lines, unmatched goods, fixed assets). Covers a Polish *faktura VAT* layout: *Sprzedawca*, *Razem netto / VAT / brutto*, per-line *Nazwa / Ilość / Cena jedn. / VAT % / Wartość netto / brutto*, plus *paragon* / proforma / corrective / non-PLN / duplicate edge cases.
+- `reference/finance.md` — endpoints table, `CreateExpenseDto` + `ExpenseItemDto` field-by-field, VAT rates, rounding rule (`totalVat = totalGross - totalNet`, reconcile to invoice totals).
+- `reference/purchases.md` — suppliers (create / search / GUS lookup), purchase invoices (`CreatePurchaseInvoiceDto`, `PurchaseInvoiceItemDto`), warehouses endpoint, PZ auto-create vs. manual (`POST /purchase-invoices/:id/create-pz`, `/cancel-pz`), product-matching strategy, common pitfalls (`supplierId` required unlike expenses; `autoCreatePZ` needs `warehouseId`; no free-form item description — every line hangs off a real product).
+- `scripts/upload-receipt.sh` — multipart POST to `/expenses/receipt-upload`, returns `{ fileUrl }`. Shared between expense and purchase-invoice flows; the folder name is cosmetic.
+
+### Product matching by Claude (not backend fuzzy search)
+
+For the purchase-invoice branch, Claude matches invoice lines to catalog entries **in its own context** instead of delegating to `/products/search?q=<item-name>` per line. The backend's search AND-s every token through unaccent + ILIKE on `name / sku / barcode`, so an invoice line like `"Dorsz filet świeży 1 kg"` forces `świeży` **and** `1` **and** `kg` to all appear on the catalog entry — one extra qualifier the product name doesn't print → zero results, even when the product exists. Per-item search also meant N API calls for an N-line invoice.
+
+New flow (`workflows/create-from-invoice-pdf.md` step 5B.1):
+- One bulk `GET /products/search?q=&limit=2000` → flat `{id, name, sku, unit: {id, abbreviation}}[]`.
+- Claude matches semantically (primary noun, size qualifier, form, unit, SKU if printed; diacritics ignored; 1kg ≠ 5kg).
+- Table with confidence shown to the user for confirmation.
+- Fallback for >2000 SKUs: filter by category first, or targeted 1–2-token search.
+
+### Product management from chat
+
+Create and update products, categories and units. **Delete is intentionally not supported** — it breaks historical orders, PZs and stock movements. The skill proposes `PUT {isActive: false}` for "hide" instead, and only falls back to real DELETE if the user explicitly acknowledges the consequences (and even then, redirects to the web UI).
+
+- `reference/products.md` — endpoints table (products + categories + units), `CreateProductDto` + `UpdateProductDto` field-by-field, SKU auto-generation behaviour, category-tree vs. flat list guidance, matching rules for `categoryId` / `unitId`, no-delete rule at the top.
+- `workflows/add-product.md` — collect name / category / unit / price → dedupe via `/products/search` → resolve `categoryId` from `/categories/tree` (ask before creating a new category) → resolve `unitId` from `/units` → preview → POST. Covers gross-instead-of-net mistakes, purchase-vs-sale-price confusion, SKU collisions, units not in the dictionary.
+- `workflows/update-product.md` — find via search → map user phrasing (Polish / Russian / English vocab for price, VAT, min-stock, weight, barcode) to DTO fields → partial PUT with only the changing fields → confirm. Explicitly refuses destructive DELETE.
+
+### UI "how do I…" guides for non-technical users
+
+The skill now answers UI questions ("where do I click", "how do I upload the invoice", "how do I mark it paid"), not just programmatic API calls. Claude answers from `guides/` for end users and translates steps into their language.
+
+- `guides/expenses.md` — full walkthrough of the Expenses module: menu location, OCR invoice upload, manual entry, line items, marking paid / reverting, bank-accounts tab, categories, filters, FAQ. Based on the current `apps/web` UI (dialogs, fields, button labels) — kept in English; Claude translates at answer time.
+
+### SKILL.md
+
+- Description expanded: classifier + PZ, product add/edit with no-delete note, end-user UI questions.
+- Map gains `guides/` (top), fills in `reference/purchases.md`, `reference/products.md`, `reference/finance.md`, and adds workflow entries for invoice-PDF, add-product, update-product.
+- `upload-receipt.sh` listed in scripts — shared between expense and purchase flows.
+
+### Backend (companion commits)
+
+- `POST /api/v1/expenses/receipt-upload` — upload-only, no OCR, returns `{ fileUrl }`. Same file types / size cap as `/expenses/upload`. The existing `/expenses/upload` stays for the web UI.
+- `GET /products/search` now accepts `?limit=N` (default 20, capped at 2000). `?q=&limit=2000` dumps the full active catalog alphabetically as a flat `{id, name, sku, unit: {id, abbreviation}}[]` — intended as the one-shot bulk-fetch for Claude's in-context matching. Existing callers (`limit` omitted) keep the 20-row default, so the Telegram purchase-invoice handler and web UI selectors are unaffected.
+
 ## 0.3.1 — 2026-04-16
 
 Marketplace repo moved from GitLab to GitHub:
